@@ -1,0 +1,4 @@
+Pillow >= 9.0
+threaded >= 4.1.0
+PyDirectInput >= 1.0.4
+pywin32
