@@ -37,7 +37,7 @@ class GameCapture(Thread):
             # win32gui.SetForegroundWindow(hwnd)
             bbox = win32gui.GetWindowRect(hwnd)
             gameScreen = ImageGrab.grab(bbox)
-            # jezli 7% uzycia procesora to za duzo
+            # jezeli 7% uzycia procesora to za duzo
             # to taki timeout zmniejsza uzycie do 1%
             # time.sleep(0.1)
 
@@ -52,17 +52,20 @@ class FishBot(Thread):
     def run(self):
         global fishBotRunning, captureRunning, gameScreen, fishTime
         if (not captureRunning):
+            print('Start Capture first!')
             return
         print('FishTime: ', fishTime)
         while fishBotRunning:
             emote = gameScreen.copy().crop((550, 50, 600, 100))
             emoteColor = emote.getpixel((15, 15))
-
             if all(i >= 230 for i in emoteColor) and self.flag:
-                print('łowimy: ', self.counter)
+                start = time.time()
+                text = self.getChat(gameScreen)
                 self.flag = False
-                time.sleep(fishTime / 1000)
+                # sprawdz jaki ma byc timeout
+                time.sleep((fishTime / 1000) - (time.time() - start))
                 self.pressSpace()
+                print(text)
 
     def pressSpace(self):
         self.flag = True
@@ -79,29 +82,16 @@ class FishBot(Thread):
         time.sleep(0.01)
         pydirectinput.keyUp('space')
 
-class OcrText(Thread):
-    flag = True
+    def getChat(self, gameScreen):
 
-    def __init__(self):
-        super().__init__()
+        chat = gameScreen.crop((15, 750, 420, 764))
+        matrix = cv2.cvtColor(np.array(chat), cv2.COLOR_RGB2BGR)
+        img = cv2.cvtColor(matrix, cv2.COLOR_BGR2GRAY)
+        _, th1 = cv2.threshold(img,164,255,cv2.THRESH_BINARY)
 
-    def run(self):
-        global fishBotRunning, captureRunning
-        if (not captureRunning):
-            return
-        while fishBotRunning:
-            window = self.getImg()
-            chat = window.crop((353, 700, 949, 798))
-            n = cv2.cvtColor(np.array(chat), cv2.COLOR_RGB2BGR)
+        tes_config = r'--oem 3 --psm 6'
 
-            img = cv2.cvtColor(n, cv2.COLOR_BGR2GRAY)
-
-            ret1,th1 = cv2.threshold(img,164,255,cv2.THRESH_BINARY)
-
-            custom_oem_psm_config = r'--oem 3 --psm 6'
-            text = pytesseract.image_to_string(th1, config=custom_oem_psm_config, lang='eng+pol')
-            print(text)
-
+        return pytesseract.image_to_string(th1, config=tes_config, lang='eng+pol')
 
 class App(tk.Tk):
     def __init__(self):
