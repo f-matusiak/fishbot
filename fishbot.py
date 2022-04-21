@@ -6,7 +6,7 @@ import tkinter as tk
 import win32gui
 
 fishBotRunning = False
-fishTime = 0
+fishTime = 3000
 
 toplist, winlist = [], []
 
@@ -31,15 +31,17 @@ class FishBot(Thread):
     def run(self):
         global fishBotRunning
         while fishBotRunning:
-            
-            img = self.getImg()
-            img.show()
-            color = img.getpixel((100, 100))
-            print(color)
-            if all(i >= 230 for i in color) and self.flag:
+            window = self.getImg()
+            emote = window.copy().crop((550, 50, 600, 100))
+            # chat = window.crop((353, 700, 949, 798))
+
+            emoteColor = emote.getpixel((15, 15))
+
+            if all(i >= 230 for i in emoteColor) and self.flag:
+                print(emoteColor)
                 self.flag = False
                 global fishTime
-                time.sleep(fishTime)
+                time.sleep(fishTime / 1000)
                 self.pressSpace()
 
     def pressSpace(self):
@@ -83,7 +85,7 @@ class App(tk.Tk):
         self.TimeLabel.place(x=0, y=40)
         self.TimeEntry = tk.Entry(self)
         self.TimeEntry.place(x=50, y=40)
-        self.TimeEntry.insert(0, '2')
+        self.TimeEntry.insert(0, '3000')
 
     def startFishThread(self):
         global fishBotRunning
