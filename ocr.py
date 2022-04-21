@@ -10,7 +10,7 @@ import numpy as np
 import pytesseract
 
 fishBotRunning = False
-fishTime = 3000
+fishTime = 2800
 captureRunning = False
 
 toplist, winlist = [], []
@@ -50,24 +50,23 @@ class FishBot(Thread):
         super().__init__()
 
     def run(self):
-        global fishBotRunning, captureRunning, gameScreen
+        global fishBotRunning, captureRunning, gameScreen, fishTime
         if (not captureRunning):
             return
+        print('FishTime: ', fishTime)
         while fishBotRunning:
             emote = gameScreen.copy().crop((550, 50, 600, 100))
             emoteColor = emote.getpixel((15, 15))
-            print(emoteColor)
 
             if all(i >= 230 for i in emoteColor) and self.flag:
+                print('łowimy: ', self.counter)
                 self.flag = False
-                global fishTime
                 time.sleep(fishTime / 1000)
                 self.pressSpace()
 
     def pressSpace(self):
         self.flag = True
-        global counter
-        counter += 1
+        self.counter += 1
         pydirectinput.keyDown('space')
         time.sleep(0.01)
         pydirectinput.keyUp('space')
@@ -131,7 +130,7 @@ class App(tk.Tk):
         self.TimeLabel.place(x=10, y=70)
         self.TimeEntry = tk.Entry(self)
         self.TimeEntry.place(x=50, y=70)
-        self.TimeEntry.insert(0, '2850')
+        self.TimeEntry.insert(0, '2800')
 
     def startFishThread(self):
         global fishBotRunning
